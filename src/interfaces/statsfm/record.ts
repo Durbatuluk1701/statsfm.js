@@ -1,4 +1,4 @@
-enum RecordType {
+export enum RecordType {
   'PLATINUM' = 'PLATINUM',
   'GOLD' = 'GOLD',
   'SILVER' = 'SILVER',

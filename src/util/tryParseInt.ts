@@ -1,4 +1,4 @@
-export const tryParseInt = (str: string | number | null | undefined): number | null => {
+export const tryParseInt = (str: string | number | null | undefined): number | null | undefined => {
   try {
     if (typeof str === 'number') return str;
 

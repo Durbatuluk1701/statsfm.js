@@ -52,12 +52,12 @@ export class HttpManager {
           if (parsedFileType) {
             finalContentType = parsedFileType;
           }
-          formData.append(
-            file.key,
-            new Blob([`${file.data}`], { type: file.contentType }),
-            file.name
-          );
         }
+        formData.append(
+          file.key,
+          new Blob([file.data], { type: finalContentType ?? 'application/octet-stream' }),
+          file.name
+        );
       } else {
         formData.append(
           file.key,
@@ -158,7 +158,7 @@ export class HttpManager {
     url: string,
     options: RequestInit,
     retries: number
-  ): Promise<ResponseLike> {
+  ): Promise<ResponseLike | null> {
     let res: ResponseLike;
     try {
       res = await fetch(url, options);
