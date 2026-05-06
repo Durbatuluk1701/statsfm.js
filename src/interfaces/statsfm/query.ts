@@ -21,7 +21,6 @@ export interface QueryWithRange {
 }
 
 export interface QueryWithTimeZone {
-  timeZoneOffset?: number;
   timeZone?: string;
 }
 
