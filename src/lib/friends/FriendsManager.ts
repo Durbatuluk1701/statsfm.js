@@ -88,14 +88,13 @@ export default class FriendsManager extends Manager {
   }
 
   async blockStatus(id: string): Promise<boolean> {
-    try {
-      await this.http.get(`/friends/block-status/${encodeURIComponent(id)}`, {
+    const res = await this.http.get<{ item: boolean }>(
+      `/friends/block-status/${encodeURIComponent(id)}`,
+      {
         authRequired: true
-      });
-    } catch (e) {
-      return false;
-    }
-    return true;
+      }
+    );
+    return res.item;
   }
 
   async status(id: string): Promise<statsfm.FriendStatus> {

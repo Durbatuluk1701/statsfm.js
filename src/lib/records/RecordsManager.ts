@@ -10,15 +10,18 @@ export default class RecordsManager extends Manager {
     return response.item;
   }
 
-  async listArtistRecords(recordIds: number[]): Promise<statsfm.StatsFMRecord> {
-    const response = await this.http.get<ItemsResponse<statsfm.StatsFMRecord>>(`/records/artists`, {
-      query: { ids: recordIds.join(',') }
-    });
+  async listArtistRecords(recordIds: number[]): Promise<statsfm.StatsFMRecord[]> {
+    const response = await this.http.get<ItemsResponse<statsfm.StatsFMRecord[]>>(
+      `/records/artists`,
+      {
+        query: { ids: recordIds.join(',') }
+      }
+    );
     return response.items;
   }
 
-  async getArtistRecordHistory(recordId: number): Promise<statsfm.StatsFMRecord> {
-    const response = await this.http.get<ItemsResponse<statsfm.StatsFMRecord>>(
+  async getArtistRecordHistory(recordId: number): Promise<statsfm.StatsFMRecord[]> {
+    const response = await this.http.get<ItemsResponse<statsfm.StatsFMRecord[]>>(
       `/records/artists/${recordId}/history`
     );
     return response.items;

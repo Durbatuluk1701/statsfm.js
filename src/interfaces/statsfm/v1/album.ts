@@ -15,7 +15,7 @@ export interface Album extends AlbumSimple {
   genres: string[];
   artists: ArtistSimple[];
   externalIds: Record<string, unknown> & { spotify?: string[]; appleMusic?: string[] };
-  type: 'single' | 'complication' | 'album';
+  type: 'single' | 'compilation' | 'album';
 }
 
 export interface TopAlbum extends TopObject {

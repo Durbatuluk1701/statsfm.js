@@ -73,7 +73,7 @@ export default class UsersManager extends Manager {
     options: (statsfm.QueryWithRange | statsfm.QueryWithDates) & statsfm.QueryWithTimeZone = {}
   ): Promise<statsfm.DateStats> {
     const res = await this.http.get<ItemsResponse<statsfm.DateStats>>(
-      `/users/${userId}/streams/stats/dates`,
+      `/users/${userId}/streams/stats/per-day`,
       {
         query: {
           ...options
