@@ -11,6 +11,7 @@ import {
 } from '../../interfaces/Request';
 import { HTTPError } from '../errors/HttpError';
 import { StatsFMAPIError, StatsFMErrorData } from '../errors/StatsFMAPIError';
+import sleep from '../../util/sleep';
 
 export class HttpManager {
   accessToken?: string;
@@ -139,6 +140,7 @@ export class HttpManager {
     const res = await this.makeRequest(url, options, retries);
 
     if (res === null) {
+      await sleep(this.getRetryDelay(retries));
       return await this.runRequest(url, options, requestData, ++retries);
     }
 
@@ -149,9 +151,20 @@ export class HttpManager {
     }
     const handledError = await this.handleErrors(res, method, url, requestData, retries);
     if (handledError === null) {
+      await sleep(this.getRetryDelay(retries));
       return await this.runRequest(url, options, requestData, ++retries);
     }
     return handledError;
+  }
+
+  /**
+   * Exponential backoff (capped at 5s) used between retries so we don't
+   * immediately hammer an endpoint that is already struggling.
+   *
+   * @param {number} retries - The number of retries already attempted.
+   */
+  private getRetryDelay(retries: number): number {
+    return Math.min(2 ** retries * 500, 5000);
   }
 
   private async makeRequest(
@@ -159,20 +172,35 @@ export class HttpManager {
     options: RequestInit,
     retries: number
   ): Promise<ResponseLike | null> {
+    const { timeout } = this.options.http;
+
+    // Abort the request if it takes too long. Without this a stalled
+    // connection (e.g. a server that accepts the socket but never responds)
+    // would leave the returned promise pending forever.
+    const controller = new AbortController();
+    const timer = timeout > 0 ? setTimeout(() => controller.abort(), timeout) : undefined;
+
     let res: ResponseLike;
     try {
-      res = await fetch(url, options);
+      res = await fetch(url, { ...options, signal: controller.signal });
     } catch (error: unknown) {
       if (!(error instanceof Error)) throw error;
-      if (
-        (('code' in error && error.code === 'ECONNRESET') ||
-          error.message.includes('ECONNRESET')) &&
-        retries !== this.options.http.retries
-      ) {
+
+      const timedOut = controller.signal.aborted || error.name === 'AbortError';
+      const connectionReset =
+        ('code' in error && error.code === 'ECONNRESET') || error.message.includes('ECONNRESET');
+
+      if ((timedOut || connectionReset) && retries !== this.options.http.retries) {
         return null;
       }
 
+      if (timedOut) {
+        throw new Error(`Request to ${url} timed out after ${timeout}ms`);
+      }
+
       throw error;
+    } finally {
+      if (timer) clearTimeout(timer);
     }
 
     return {

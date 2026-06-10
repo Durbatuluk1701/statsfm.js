@@ -13,7 +13,8 @@ export const DefaultOptions = {
     retries: 3,
     apiUrl: 'https://api.stats.fm/api',
     userAgentAppendix: DefaultUserAgentAppendix,
-    version: '1'
+    version: '1',
+    timeout: 120_000
   },
   auth: {}
 } as const satisfies Options;
